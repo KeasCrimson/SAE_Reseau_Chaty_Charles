@@ -15,6 +15,10 @@ public class ServeurMain {
     public static void main(String[] args) throws IOException, Exception {
 
         String[][] config = LectureXML.chargerConfig("../conf.d/serverWeb.conf");
+        for(String[] s : config){
+            for(String s2 : s)
+            System.out.println(s2);
+        }
         // recupere le port
         for(int nConfig = 0; nConfig<config.length; nConfig++){
             final int index = nConfig;

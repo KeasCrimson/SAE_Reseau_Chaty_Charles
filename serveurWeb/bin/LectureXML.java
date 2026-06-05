@@ -19,14 +19,14 @@ public class LectureXML {
         String[][] tabReponse = null ;
 
         int nbRacineNoeuds = racineNoeuds.getLength();
+        int indiceCol = 0;
         for (int i = 0; i<nbRacineNoeuds; i++){
             if(racineNoeuds.item(i).getNodeType() == Node.ELEMENT_NODE){
                 Element site = (Element) racineNoeuds.item(i);
 
                 tabReponse = new String[3][5];
                 int indiceLigne = 0;
-                int indiceCol = 0;
-
+                
                 Element port = (Element) site.getElementsByTagName("port").item(0);
                 Element docRoot = (Element) site.getElementsByTagName("DocumentRoot").item(0);
                 Element defIndex = (Element) site.getElementsByTagName("Default").item(0);

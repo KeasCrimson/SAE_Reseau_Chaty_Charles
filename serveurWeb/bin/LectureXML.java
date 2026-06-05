@@ -16,7 +16,7 @@ public class LectureXML {
 
         Element racine = document.getDocumentElement();
         NodeList racineNoeuds = racine.getChildNodes();
-        String[][] tabReponse = null ;
+        String[][] tabReponse = new String[3][5];
 
         int nbRacineNoeuds = racineNoeuds.getLength();
         int indiceCol = 0;
@@ -24,7 +24,6 @@ public class LectureXML {
             if(racineNoeuds.item(i).getNodeType() == Node.ELEMENT_NODE){
                 Element site = (Element) racineNoeuds.item(i);
 
-                tabReponse = new String[3][5];
                 int indiceLigne = 0;
                 
                 Element port = (Element) site.getElementsByTagName("port").item(0);
@@ -33,11 +32,15 @@ public class LectureXML {
                 Element logAcc = (Element) site.getElementsByTagName("Acceslog").item(0);
                 Element errLog = (Element) site.getElementsByTagName("Errorlog").item(0);
                 
-                tabReponse[indiceCol][indiceLigne++] = port.getTextContent();
-                tabReponse[indiceCol][indiceLigne++] = docRoot.getTextContent();
-                tabReponse[indiceCol][indiceLigne++] = defIndex.getTextContent();
-                tabReponse[indiceCol][indiceLigne++] = logAcc.getTextContent();
-                tabReponse[indiceCol][indiceLigne++] = errLog.getTextContent();
+                tabReponse[indiceCol][indiceLigne] = port.getTextContent();
+                indiceLigne++;
+                tabReponse[indiceCol][indiceLigne] = docRoot.getTextContent();
+                indiceLigne++;
+                tabReponse[indiceCol][indiceLigne] = defIndex.getTextContent();
+                indiceLigne++;
+                tabReponse[indiceCol][indiceLigne] = logAcc.getTextContent();
+                indiceLigne++;
+                tabReponse[indiceCol][indiceLigne] = errLog.getTextContent();
 
                 indiceCol++;
             } 

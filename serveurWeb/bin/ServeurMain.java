@@ -12,18 +12,20 @@ import java.util.Scanner;
  * Classe qui lance le serveur web
  */
 public class ServeurMain {
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, Exception {
 
         String[][] config = LectureXML.chargerConfig("../conf.d/serverWeb.conf");
         // recupere le port
         for(int nConfig = 0; nConfig<config.length; nConfig++){
+            final int index = nConfig;
             int port = Integer.parseInt(config[nConfig][0]);
             // ouvre le socket serveur avec ce port
-            Thread site = new Thread(() -> {
-                ServerSocket serv = new ServerSocket(port);
-            // tant que vrai
-                while (true){
-                    try{
+            Thread site = new Thread(()  -> {
+                try{
+                    ServerSocket serv = new ServerSocket(port);
+                // tant que vrai
+                    while (true){
+                    
                         Socket client = serv.accept();
                         // on initialise la sortie
                         PrintWriter out = new PrintWriter(client.getOutputStream(),true);
@@ -39,7 +41,7 @@ public class ServeurMain {
                             // split la ligne pour ne recuperer que le chemin demande
                             String[] chemin = ligne.split(" ");
                             // je rajoute un point devant pour construire un vrai chemin d'acces
-                            String file = config[nConfig][1] + chemin[1];
+                            String file = config[index][1] + chemin[1];
                             System.out.println(file);
 
                             try{
@@ -62,10 +64,12 @@ public class ServeurMain {
                                 System.out.println(erreur404);
                             }
                         }
-                    } catch (IOException e){
-                        System.out.println("Problème de lecture du fichier");
-                    }
+                    
+                    
                 }
+                }catch (IOException e){
+                        System.out.println(e);
+                    }
             });
             site.start();
         }

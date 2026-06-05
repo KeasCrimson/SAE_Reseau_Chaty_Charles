@@ -26,11 +26,13 @@ public class ServeurMain {
             // ouvre le socket serveur avec ce port
             Thread site = new Thread(()  -> {
                 try{
+                    System.out.println("Le serveur " + index + " est ouvert");
                     ServerSocket serv = new ServerSocket(port);
                 // tant que vrai
                     while (true){
                     
                         Socket client = serv.accept();
+                        System.out.println("La connection avec le serveur " + index + " est OK");
                         // on initialise la sortie
                         PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                         // on initialise l'entree

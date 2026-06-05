@@ -8,6 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Scanner;
 import java.io.File;
+import java.net.InetAddress;
+import java.util.Calendar;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 /**
  * Classe qui lance le serveur web
@@ -29,13 +33,19 @@ public class ServeurMain {
             int port = Integer.parseInt(config[nConfig][0]);
             // ouvre le socket serveur avec ce port
             Thread site = new Thread(()  -> {
+
+                    File access = new File(config[index][3]);
+                    File errors = new File(config[index][4]); 
+
                 try{
                     System.out.println("Le serveur " + index + " est ouvert");
                     ServerSocket serv = new ServerSocket(port);
                 // tant que vrai
                     while (true){
-                    
+                        
+                        
                         Socket client = serv.accept();
+                        ecrireLog(access, client, "Nouvelle connexion sur le port" + config[index][0]);
                         System.out.println("La connection avec le serveur " + index + " est OK");
                         // on initialise la sortie
                         PrintWriter out = new PrintWriter(client.getOutputStream(),true);
@@ -74,7 +84,7 @@ public class ServeurMain {
                                 String mess =   "HTTP/1.1 200 OK\r\n" +
                                         "Content-Type: text/html; charset=iso-8859-1\r\n" +
                                         "Connection : Keep-Alive\r\n" +
-                                        "File Data: 30 bytes\r\n";
+                                        "File Data: "+ verifFichier.length() + " bytes\r\n";
                                 
                                 out.println(mess);
                                 client.getOutputStream().write(tab);
@@ -86,6 +96,7 @@ public class ServeurMain {
                                 String erreur404 = "HTTP/1.1 404 Not Found\r\n\r\n<h1>Erreur 404 : Fichier introuvable</h1>";
                                 out.print(erreur404);
                                 out.flush();
+                                ecrireLog(errors, client, "Erreur 404");
                             } catch (IOException io){
                                 System.out.println("Ceci est un dossier");
                                 out.print("HTTP/1.1 200 OK\r\n" +
@@ -116,6 +127,26 @@ public class ServeurMain {
         }
         res += "</ul>";
         return res;
+        
+    }
+
+    public static void ecrireLog(File f, Socket s, String m){
+        try{
+            if(!f.exists()){
+            f.createNewFile();
+            }
+            BufferedWriter bf = new BufferedWriter(new FileWriter(f, true));
+            Calendar date = Calendar.getInstance();
+            String message = "";
+            message+="IP: " + s.getInetAddress() + "  "
+            +"Requête: " + m + "  "
+            +"Date et heure: "+date.toInstant() + "  \n";
+
+            bf.write(message);
+            bf.close();
+        } catch(IOException e){
+            System.out.println("Problème de lecture de fichier");
+        }
         
     }
 }

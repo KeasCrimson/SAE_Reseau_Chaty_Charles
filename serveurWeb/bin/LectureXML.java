@@ -27,21 +27,24 @@ public class LectureXML {
                 int indiceLigne = 0;
                 
                 Element port = (Element) site.getElementsByTagName("port").item(0);
-                Element docRoot = (Element) site.getElementsByTagName("DocumentRoot").item(0);
-                Element defIndex = (Element) site.getElementsByTagName("Default").item(0);
-                Element logAcc = (Element) site.getElementsByTagName("Acceslog").item(0);
-                Element errLog = (Element) site.getElementsByTagName("Errorlog").item(0);
-                
                 tabReponse[indiceCol][indiceLigne] = port.getTextContent();
                 indiceLigne++;
+                Element docRoot = (Element) site.getElementsByTagName("DocumentRoot").item(0);
                 tabReponse[indiceCol][indiceLigne] = docRoot.getTextContent();
                 indiceLigne++;
-                tabReponse[indiceCol][indiceLigne] = defIndex.getTextContent();
-                indiceLigne++;
+                try {
+                    Element defIndex = (Element) site.getElementsByTagName("Default").item(0);
+                    tabReponse[indiceCol][indiceLigne] = defIndex.getTextContent();
+                    indiceLigne++;
+                } catch (NullPointerException npe){
+                    tabReponse[indiceCol][indiceLigne] = null;
+                    indiceLigne++;
+                }
+                Element logAcc = (Element) site.getElementsByTagName("Acceslog").item(0);
                 tabReponse[indiceCol][indiceLigne] = logAcc.getTextContent();
                 indiceLigne++;
+                Element errLog = (Element) site.getElementsByTagName("Errorlog").item(0);
                 tabReponse[indiceCol][indiceLigne] = errLog.getTextContent();
-
                 indiceCol++;
             } 
         }

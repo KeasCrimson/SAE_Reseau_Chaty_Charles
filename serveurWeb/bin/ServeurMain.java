@@ -13,6 +13,9 @@ import java.io.File;
  * Classe qui lance le serveur web
  */
 public class ServeurMain {
+
+    public static String racine = "";
+
     public static void main(String[] args) throws IOException, Exception {
 
         String[][] config = LectureXML.chargerConfig("../conf.d/serverWeb.conf");
@@ -48,7 +51,10 @@ public class ServeurMain {
                             // split la ligne pour ne recuperer que le chemin demande
                             String[] chemin = ligne.split(" ");
                             // je rajoute un point devant pour construire un vrai chemin d'acces
-                            String file = config[index][1] + chemin[1];
+                            if(racine.equals("")){
+                                racine = config[index][1] + chemin[1];
+                            }
+                            String file = racine + chemin[1];
                             System.out.println(file);
                             String listeFich = "";
 
@@ -87,6 +93,7 @@ public class ServeurMain {
                                         "Connection : Keep-Alive\r\n" +
                                         "File Data: 30 bytes\r\n\r\n" + listeFich);
                                 out.flush();
+                                racine+= chemin[1];
                             }
                         }
                     

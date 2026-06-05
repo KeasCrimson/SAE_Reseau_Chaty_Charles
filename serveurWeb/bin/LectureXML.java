@@ -5,7 +5,7 @@ import javax.xml.parsers.*;
  * Classe permettant de lire un fichier .xml
  */
 public class LectureXML {
-    public static String[] chargerConfig(String fichier) throws Exception{
+    public static String[][] chargerConfig(String fichier) throws Exception{
 
         Document document = null;
         DocumentBuilderFactory factory = null;
@@ -15,26 +15,33 @@ public class LectureXML {
         document = builder.parse(fichier);
 
         Element racine = document.getDocumentElement();
-
         NodeList racineNoeuds = racine.getChildNodes();
-        
-        String[] tabReponse = new String[5];
+        String[][] tabReponse = null ;
 
-        Element port = (Element) racine.getElementsByTagName("port").item(0);
-        tabReponse[0] = port.getTextContent();
+        int nbRacineNoeuds = racineNoeuds.getLength();
+        for (int i = 0; i<nbRacineNoeuds; i++){
+            if(racineNoeuds.item(i).getNodeType() == Node.ELEMENT_NODE){
+                Element site = (Element) racineNoeuds.item(i);
 
-        Element docRoot = (Element) racine.getElementsByTagName("DocumentRoot").item(0);
-        tabReponse[1] = docRoot.getTextContent();
+                tabReponse = new String[3][5];
+                int indiceLigne = 0;
+                int indiceCol = 0;
 
-        Element defIndex = (Element) racine.getElementsByTagName("Default").item(0);
-        tabReponse[2] = defIndex.getTextContent();
+                Element port = (Element) site.getElementsByTagName("port").item(0);
+                Element docRoot = (Element) site.getElementsByTagName("DocumentRoot").item(0);
+                Element defIndex = (Element) site.getElementsByTagName("Default").item(0);
+                Element logAcc = (Element) site.getElementsByTagName("Acceslog").item(0);
+                Element errLog = (Element) site.getElementsByTagName("Errorlog").item(0);
+                
+                tabReponse[indiceCol][indiceLigne++] = port.getTextContent();
+                tabReponse[indiceCol][indiceLigne++] = docRoot.getTextContent();
+                tabReponse[indiceCol][indiceLigne++] = defIndex.getTextContent();
+                tabReponse[indiceCol][indiceLigne++] = logAcc.getTextContent();
+                tabReponse[indiceCol][indiceLigne++] = errLog.getTextContent();
 
-        Element logAcc = (Element) racine.getElementsByTagName("Acceslog").item(0);
-        tabReponse[3] = logAcc.getTextContent();
-
-        Element errLog = (Element) racine.getElementsByTagName("Errorlog").item(0);
-        tabReponse[4] = errLog.getTextContent();
-
+                indiceCol++;
+            } 
+        }
         return tabReponse;
     }
 }

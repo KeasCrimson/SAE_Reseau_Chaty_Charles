@@ -50,13 +50,14 @@ public class ServeurMain {
                             // je rajoute un point devant pour construire un vrai chemin d'acces
                             String file = config[index][1] + chemin[1];
                             System.out.println(file);
+                            String listeFich = "";
 
                             File verifFichier = new File(file);
                             if (verifFichier.exists() && verifFichier.isDirectory()){
                                 if (config[index][2] != null){
                                     file = config[index][1] + "/" + config[index][2];
                                 } else {
-                                    String listeFich = this.contenuFichier(verifFichier);
+                                    listeFich = contenuFichier(verifFichier);
                                 }
                             }
                             
@@ -101,7 +102,13 @@ public class ServeurMain {
     }
 
     public static String contenuFichier(File f){
-        String res = "";
+        String res = "<ul>";
+        String[] files = f.list();
+        for (String s : files){
+            res += "<li><a href = \""+ s + "\">" + s +"</a></li>\n"; 
+        }
+        res += "</ul>";
+        return res;
         
     }
 }

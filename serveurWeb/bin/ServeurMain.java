@@ -62,7 +62,7 @@ public class ServeurMain {
                             String[] chemin = ligne.split(" ");
                             // je rajoute un point devant pour construire un vrai chemin d'acces
                             if(racine.equals("")){
-                                racine = config[index][1] + chemin[1];
+                                racine = config[index][1];
                             }
                             String file = racine + chemin[1];
                             System.out.println(file);

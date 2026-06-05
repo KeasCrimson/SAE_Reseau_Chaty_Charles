@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Scanner;
+import java.io.File;
 
 /**
  * Classe qui lance le serveur web
@@ -50,6 +51,15 @@ public class ServeurMain {
                             String file = config[index][1] + chemin[1];
                             System.out.println(file);
 
+                            File verifFichier = new File(file);
+                            if (verifFichier.exists() && verifFichier.isDirectory()){
+                                if (config[index][2] != null){
+                                    file = config[index][1] + "/" + config[index][2];
+                                } else {
+                                    String listeFich = this.contenuFichier(verifFichier);
+                                }
+                            }
+                            
                             try{
                                 // essaye de lire le fichier et de le mettre dans un tableau d'octet
                                 byte[] tab = Files.readAllBytes(Paths.get(file));
@@ -67,7 +77,15 @@ public class ServeurMain {
                                 // si le fichier n'est pas trouve on lance l'erreur 404
                                 System.out.println("Fichier non trouvé : " + file);
                                 String erreur404 = "HTTP/1.1 404 Not Found\r\n\r\n<h1>Erreur 404 : Fichier introuvable</h1>";
-                                System.out.println(erreur404);
+                                out.print(erreur404);
+                                out.flush();
+                            } catch (IOException io){
+                                System.out.println("Ceci est un dossier");
+                                out.print("HTTP/1.1 200 OK\r\n" +
+                                        "Content-Type: text/html; charset=iso-8859-1\r\n" +
+                                        "Connection : Keep-Alive\r\n" +
+                                        "File Data: 30 bytes\r\n\r\n" + listeFich);
+                                out.flush();
                             }
                         }
                     
@@ -75,9 +93,15 @@ public class ServeurMain {
                 }
                 }catch (IOException e){
                         System.out.println(e);
+
                     }
             });
             site.start();
         }
+    }
+
+    public static String contenuFichier(File f){
+        String res = "";
+        
     }
 }

@@ -1,0 +1,9 @@
+Package: serveur-web-java
+Version: 1.0
+Section: custom
+Priority: optional
+Architecture: all
+Essential: no
+Depends: default-jre
+Maintainer: CHATY Aloys et CHARLES Samuel
+Description: Serveur Web en Java pour SAE 2.03

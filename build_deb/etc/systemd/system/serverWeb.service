@@ -1,0 +1,13 @@
+[Unit]
+Description=Serveur Web Java
+After=network.target
+
+[Service]
+Type=forking
+User=user
+ExecStart=/usr/share/serveurWeb/scripts/start.sh
+ExecStop=/usr/share/serveurWeb/scripts/stop.sh
+PIDFile=/usr/share/serveurWeb/run/myweb.pid
+
+[Install]
+WantedBy=multi-user.target

@@ -113,12 +113,21 @@ public class ServeurMain {
                                 // force l'envoi immediat des donnees
                                 client.getOutputStream().flush();
                             } catch (java.nio.file.NoSuchFileException e){
-                                // si le fichier n'est pas trouve on lance l'erreur 404
-                                System.out.println("Fichier non trouvé : " + file);
-                                String erreur404 = "HTTP/1.1 404 Not Found\r\n\r\n<h1>Erreur 404 : Fichier introuvable</h1>";
-                                out.print(erreur404);
-                                out.flush();
-                                ecrireLog(errors, client, "Erreur 404");
+                                if (file.equals(serverRacine + "/status")) {
+                                    out.print("HTTP/1.1 200 OK\r\n" +
+                                        "Content-Type: text/html; charset=iso-8859-1\r\n" +
+                                        "Connection : Keep-Alive\r\n" +
+                                        "File Data: 30 bytes\r\n\r\n" +ServerStatus());
+                                    out.flush();
+                                }
+                                else{
+                                    // si le fichier n'est pas trouve on lance l'erreur 404
+                                    System.out.println("Fichier non trouvé : " + file);
+                                    String erreur404 = "HTTP/1.1 404 Not Found\r\n\r\n<h1>Erreur 404 : Fichier introuvable</h1>";
+                                    out.print(erreur404);
+                                    out.flush();
+                                    ecrireLog(errors, client, "Erreur 404");
+                                }
                             } catch (IOException io){
                                 System.out.println("Ceci est un dossier");
                                 out.print("HTTP/1.1 200 OK\r\n" +
@@ -179,6 +188,7 @@ public class ServeurMain {
         s+= "<li>Total Memory : " + Runtime.getRuntime().totalMemory() + "</li>\n";
         s+= "<li>Max Memory : " + Runtime.getRuntime().maxMemory() + "</li>\n";
         s+= "<li>Nb de Processus : " + Thread.activeCount() + "</li>\n</ul>";
+        System.out.println(s);
         return s;
     }
 }

@@ -37,12 +37,12 @@ public class ServeurMain {
 
                     File access = new File(config[index][3]);
                     File errors = new File(config[index][4]); 
+                    String serverRacine = "";
 
                 try{
                     System.out.println("Le serveur " + index + " est ouvert");
                     ServerSocket serv = new ServerSocket(port);
-                    String serverRacine = "";
-                // tant que vrai
+                    // tant que vrai
                     while (true){
                         
                         
@@ -62,81 +62,105 @@ public class ServeurMain {
                         if(ligne != null && ligne.contains("GET")){
                             // split la ligne pour ne recuperer que le chemin demande
                             String[] chemin = ligne.split(" ");
-                            // je rajoute un point devant pour construire un vrai chemin d'acces
-                            if(serverRacine.equals("")){
-                                serverRacine = config[index][1];
-                            }
-                            String file = serverRacine + chemin[1];
-                            System.out.println(file);
-                            String listeFich = "";
 
-                            File verifFichier = new File(file);
-                            if (verifFichier.exists() && verifFichier.isDirectory()){
-                                if (config[index][2] != null){
-                                    file = config[index][1] + "/" + config[index][2];
-                                } else {
-                                    listeFich = contenuFichier(verifFichier);
-                                }
-                            }
-                            
-                            Calendar date = Calendar.getInstance();
-                            String str = file + date.toInstant();
-                            MessageDigest msg = null;
-
-                            try{
-                                msg = MessageDigest.getInstance("SHA-256");
-                            } catch(NoSuchAlgorithmException e){
-                                e.printStackTrace();
-                            }
-                            byte[] hash = msg.digest(str.getBytes(StandardCharsets.UTF_8));
-                            // convertir bytes en hexadécimal
-                            StringBuilder s = new StringBuilder();
-                            for (byte b : hash) {
-                                s.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
-                            }
-                            System.out.println(s.toString());
-
-                            try{
-                                // essaye de lire le fichier et de le mettre dans un tableau d'octet
-                                byte[] tab = Files.readAllBytes(Paths.get(file));
-                                // creation de la reponse
-                                String mess = "HTTP/1.1 200 OK\r\n" +
-                                            "Content-Type: text/html; charset=iso-8859-1\r\n" +
-                                            "Connection: Keep-Alive\r\n" +
-                                            "Content-Length: " + verifFichier.length() + "\r\n" +
-                                            "Cache-Control: max-age=604800\r\n" +
-                                            "ETag: \"" + s.toString() + "\"\r\n" +
-                                            "\r\n";
+                            if (chemin[1].equals("/status")) {
+                                String pageStatus = ServerStatus(); // On appelle ta méthode
                                 
-                                out.println(mess);
-                                client.getOutputStream().write(tab);
-                                // force l'envoi immediat des donnees
-                                client.getOutputStream().flush();
-                            } catch (java.nio.file.NoSuchFileException e){
-                                if (file.equals(serverRacine + "/status")) {
-                                    out.print("HTTP/1.1 200 OK\r\n" +
-                                        "Content-Type: text/html; charset=iso-8859-1\r\n" +
-                                        "Connection : Keep-Alive\r\n" +
-                                        "File Data: 30 bytes\r\n\r\n" +ServerStatus());
-                                    out.flush();
-                                }
-                                else{
-                                    // si le fichier n'est pas trouve on lance l'erreur 404
-                                    System.out.println("Fichier non trouvé : " + file);
-                                    String erreur404 = "HTTP/1.1 404 Not Found\r\n\r\n<h1>Erreur 404 : Fichier introuvable</h1>";
-                                    out.print(erreur404);
-                                    out.flush();
-                                    ecrireLog(errors, client, "Erreur 404");
-                                }
-                            } catch (IOException io){
-                                System.out.println("Ceci est un dossier");
-                                out.print("HTTP/1.1 200 OK\r\n" +
-                                        "Content-Type: text/html; charset=iso-8859-1\r\n" +
-                                        "Connection : Keep-Alive\r\n" +
-                                        "File Data: 30 bytes\r\n\r\n" + listeFich);
+                                // On crée l'en-tête HTTP
+                                String entete = "HTTP/1.1 200 OK\r\n" +
+                                                "Content-Type: text/html; charset=UTF-8\r\n" +
+                                                "Connection: close\r\n\r\n"; // La double ligne vide est cruciale
+                                                
+                                out.print(entete);
+                                out.print(pageStatus);
                                 out.flush();
-                                serverRacine+= chemin[1];
+                                client.close(); // On ferme proprement la connexion
+                            } else {
+                                // je rajoute un point devant pour construire un vrai chemin d'acces
+                                if(serverRacine.equals("")){
+                                    serverRacine = config[index][1];
+                                }
+                                String file = serverRacine + chemin[1];
+                                System.out.println(file);
+                                String listeFich = "";
+    
+                                File verifFichier = new File(file);
+                                if (verifFichier.exists() && verifFichier.isDirectory()){
+                                    if (config[index][2] != null){
+                                        file = config[index][1] + "/" + config[index][2];
+                                    } else {
+                                        listeFich = contenuFichier(verifFichier);
+                                    }
+                                }
+                                
+                                String etagDuClient = null;
+                                while (ligne != null && !ligne.isEmpty()) {
+                                    if (ligne.startsWith("If-None-Match:")) {
+                                        etagDuClient = ligne.split(":")[1].trim().replace("\"", ""); 
+                                    }
+                                    ligne = in.readLine();
+                                }
+    
+                                String str = file + verifFichier.lastModified();
+    
+                                MessageDigest msg = null;
+                                try {
+                                    msg = MessageDigest.getInstance("SHA-256");
+                                } catch(NoSuchAlgorithmException e) {
+                                    e.printStackTrace();
+                                }
+                                byte[] hash = msg.digest(str.getBytes(StandardCharsets.UTF_8));
+    
+                                StringBuilder s = new StringBuilder();
+                                for (byte b : hash) {
+                                    s.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+                                }
+    
+                                if (etagDuClient != null && etagDuClient.equals(s.toString())) {
+                                    out.print("HTTP/1.1 304 Not Modified\r\n");
+                                    out.print("ETag: \"" + s.toString() + "\"\r\n");
+                                    out.print("\r\n");
+                                    out.flush();
+                                } else {
+                                    try{
+                                        // essaye de lire le fichier et de le mettre dans un tableau d'octet
+                                        byte[] tab = Files.readAllBytes(Paths.get(file));
+                                        // creation de la reponse
+                                        String mess = "HTTP/1.1 200 OK\r\n" +
+                                                    "Content-Type: text/html; charset=iso-8859-1\r\n" +
+                                                    "Connection: close\r\n" +
+                                                    "Content-Length: " + verifFichier.length() + "\r\n" +
+                                                    "Cache-Control: max-age=604800\r\n" +
+                                                    "ETag: \"" + s.toString() + "\"\r\n" +
+                                                    "\r\n";
+                                        
+                                        out.println(mess);
+                                        client.getOutputStream().write(tab);
+                                        // force l'envoi immediat des donnees
+                                        client.getOutputStream().flush();
+                                    } catch (java.nio.file.NoSuchFileException e){
+                                        // si le fichier n'est pas trouve on lance l'erreur 404
+                                        System.out.println("Fichier non trouvé : " + file);
+                                        String erreur404 = "HTTP/1.1 404 Not Found\r\n\r\n<h1>Erreur 404 : Fichier introuvable</h1>";
+                                        out.print(erreur404);
+                                        out.flush();
+                                        ecrireLog(errors, client, "Erreur 404");
+                                    } catch (IOException io){
+                                        System.out.println("Ceci est un dossier");
+                                        out.print("HTTP/1.1 200 OK\r\n" +
+                                                "Content-Type: text/html; charset=iso-8859-1\r\n" +
+                                                "Connection : Keep-Alive\r\n" +
+                                                "File Data: 30 bytes\r\n\r\n" + listeFich);
+                                        out.flush();
+                                        serverRacine+= chemin[1];
+                                    }
+    
+                                }
+                                
                             }
+
+
+
 
                         }
                     
@@ -188,7 +212,6 @@ public class ServeurMain {
         s+= "<li>Total Memory : " + Runtime.getRuntime().totalMemory() + "</li>\n";
         s+= "<li>Max Memory : " + Runtime.getRuntime().maxMemory() + "</li>\n";
         s+= "<li>Nb de Processus : " + Thread.activeCount() + "</li>\n</ul>";
-        System.out.println(s);
         return s;
     }
 }

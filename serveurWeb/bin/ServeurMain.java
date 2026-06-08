@@ -6,9 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Scanner;
 import java.io.File;
-import java.net.InetAddress;
 import java.util.Calendar;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -18,10 +16,7 @@ import java.io.FileWriter;
  */
 public class ServeurMain {
 
-    public static String racine = "";
-
     public static void main(String[] args) throws IOException, Exception {
-
         String[][] config = LectureXML.chargerConfig("../conf.d/serverWeb.conf");
         for(String[] s : config){
             for(String s2 : s)
@@ -40,6 +35,7 @@ public class ServeurMain {
                 try{
                     System.out.println("Le serveur " + index + " est ouvert");
                     ServerSocket serv = new ServerSocket(port);
+                    String serverRacine = "";
                 // tant que vrai
                     while (true){
                         
@@ -61,10 +57,10 @@ public class ServeurMain {
                             // split la ligne pour ne recuperer que le chemin demande
                             String[] chemin = ligne.split(" ");
                             // je rajoute un point devant pour construire un vrai chemin d'acces
-                            if(racine.equals("")){
-                                racine = config[index][1];
+                            if(serverRacine.equals("")){
+                                serverRacine = config[index][1];
                             }
-                            String file = racine + chemin[1];
+                            String file = serverRacine + chemin[1];
                             System.out.println(file);
                             String listeFich = "";
 
@@ -104,8 +100,14 @@ public class ServeurMain {
                                         "Connection : Keep-Alive\r\n" +
                                         "File Data: 30 bytes\r\n\r\n" + listeFich);
                                 out.flush();
-                                racine+= chemin[1];
+                                serverRacine+= chemin[1];
                             }
+                            System.out.println("Processor" + Runtime.getRuntime().availableProcessors());
+                            System.out.println("Memoire libre" + Runtime.getRuntime().freeMemory());
+                            System.out.println("Memoire totale" + Runtime.getRuntime().totalMemory());
+                            System.out.println("Max memory" + Runtime.getRuntime().maxMemory());
+                            System.out.println("Processus" + Thread.activeCount());
+
                         }
                     
                     

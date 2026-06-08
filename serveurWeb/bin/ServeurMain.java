@@ -8,6 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.File;
 import java.util.Calendar;
+
+import javax.swing.text.AbstractDocument.Content;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
@@ -102,11 +105,6 @@ public class ServeurMain {
                                 out.flush();
                                 serverRacine+= chemin[1];
                             }
-                            System.out.println("Processor" + Runtime.getRuntime().availableProcessors());
-                            System.out.println("Memoire libre" + Runtime.getRuntime().freeMemory());
-                            System.out.println("Memoire totale" + Runtime.getRuntime().totalMemory());
-                            System.out.println("Max memory" + Runtime.getRuntime().maxMemory());
-                            System.out.println("Processus" + Thread.activeCount());
 
                         }
                     
@@ -129,7 +127,6 @@ public class ServeurMain {
         }
         res += "</ul>";
         return res;
-        
     }
 
     public static void ecrireLog(File f, Socket s, String m){
@@ -150,5 +147,15 @@ public class ServeurMain {
             System.out.println("Problème de lecture de fichier");
         }
         
+    }
+
+    public static String ServerStatus(){
+        String s = "<ul>";
+        s+= "<li>Available Processor : " + Runtime.getRuntime().availableProcessors() + "</li>\n";
+        s+= "<li>Free Memory : " + Runtime.getRuntime().freeMemory() + "</li>\n";
+        s+= "<li>Total Memory : " + Runtime.getRuntime().totalMemory() + "</li>\n";
+        s+= "<li>Max Memory : " + Runtime.getRuntime().maxMemory() + "</li>\n";
+        s+= "<li>Nb de Processus : " + Thread.activeCount() + "</li>\n</ul>";
+        return s;
     }
 }

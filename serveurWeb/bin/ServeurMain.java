@@ -4,8 +4,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.io.File;
 import java.util.Calendar;
 
@@ -76,14 +79,34 @@ public class ServeurMain {
                                 }
                             }
                             
+                            Calendar date = Calendar.getInstance();
+                            String str = file + date.toInstant();
+                            MessageDigest msg = null;
+
+                            try{
+                                msg = MessageDigest.getInstance("SHA-256");
+                            } catch(NoSuchAlgorithmException e){
+                                e.printStackTrace();
+                            }
+                            byte[] hash = msg.digest(str.getBytes(StandardCharsets.UTF_8));
+                            // convertir bytes en hexadécimal
+                            StringBuilder s = new StringBuilder();
+                            for (byte b : hash) {
+                                s.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+                            }
+                            System.out.println(s.toString());
+
                             try{
                                 // essaye de lire le fichier et de le mettre dans un tableau d'octet
                                 byte[] tab = Files.readAllBytes(Paths.get(file));
                                 // creation de la reponse
-                                String mess =   "HTTP/1.1 200 OK\r\n" +
-                                        "Content-Type: text/html; charset=iso-8859-1\r\n" +
-                                        "Connection : Keep-Alive\r\n" +
-                                        "File Data: "+ verifFichier.length() + " bytes\r\n";
+                                String mess = "HTTP/1.1 200 OK\r\n" +
+                                            "Content-Type: text/html; charset=iso-8859-1\r\n" +
+                                            "Connection: Keep-Alive\r\n" +
+                                            "Content-Length: " + verifFichier.length() + "\r\n" +
+                                            "Cache-Control: max-age=604800\r\n" +
+                                            "ETag: \"" + s.toString() + "\"\r\n" +
+                                            "\r\n";
                                 
                                 out.println(mess);
                                 client.getOutputStream().write(tab);

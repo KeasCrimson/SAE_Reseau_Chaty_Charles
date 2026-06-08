@@ -1,6 +1,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -11,10 +12,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.io.File;
 import java.util.Calendar;
+import java.util.zip.GZIPOutputStream;
 
 import javax.swing.text.AbstractDocument.Content;
 
 import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
 import java.io.FileWriter;
 
 /**
@@ -53,6 +56,7 @@ public class ServeurMain {
                         PrintWriter out = new PrintWriter(client.getOutputStream(),true);
                         // on initialise l'entree
                         BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                        OutputStream os = client.getOutputStream();
 
                         // lecture de la requete
                         String ligne = in.readLine();
@@ -92,7 +96,35 @@ public class ServeurMain {
                                         listeFich = contenuFichier(verifFichier);
                                     }
                                 }
-                                
+
+                                if (file.endsWith(".png")||file.endsWith(".jpg")||file.endsWith(".pdf")) {
+                                 String contentType;
+                                 byte[] image = Files.readAllBytes(Paths.get(file));
+                                 ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+                                 GZIPOutputStream gzipOut = new GZIPOutputStream(byteOut);
+                                 gzipOut.write(image);
+                                 gzipOut.close();
+                                 byte[] compressedImage = byteOut.toByteArray();
+                                 if (file.endsWith(".png")) {
+                                    contentType = "image/png";
+                                 }else if (file.endsWith(".jpg")) {
+                                    contentType = "image/jpg";
+                                 } else{
+                                    contentType = "application/pdf";
+                                 }
+                                 String head= "HTTP/1.1 200 OK\r\n" +
+                                 "Content-Type: " + contentType + "\r\n" +
+                                 "Content-Encoding: gzip\r\n" +
+                                 "Content-Length: " + compressedImage.length + "\r\n\r\n";
+                                 
+                                 os.write(head.getBytes(StandardCharsets.US_ASCII));
+                                 os.write(compressedImage);
+                                 os.flush();
+
+                                 client.close();
+                                } else{
+
+
                                 String etagDuClient = null;
                                 while (ligne != null && !ligne.isEmpty()) {
                                     if (ligne.startsWith("If-None-Match:")) {
@@ -154,7 +186,7 @@ public class ServeurMain {
                                         out.flush();
                                         serverRacine+= chemin[1];
                                     }
-    
+                                 }
                                 }
                                 
                             }
